@@ -22,9 +22,10 @@ public class GameManager : NetworkBehaviour
             playerObject.GetComponent<PlayerManager>().SetPlayerStatusRPC(true);
         }
 
-        int randomIdx = Random.Range(0, NetworkManager.Singleton.SpawnManager.GetConnectedPlayers().Count);
-        currentChosen.Value = NetworkManager.Singleton.SpawnManager.GetConnectedPlayers()[randomIdx];
+        int randomIdx = Random.Range(0, NetworkManager.Singleton.ConnectedClientsIds.Count);
+        ulong chosenClientID = NetworkManager.Singleton.ConnectedClientsIds[randomIdx];
 
+        currentChosen.Value = chosenClientID;
         playing.Value = true;
     }
 
@@ -36,8 +37,8 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        ulong taggerID = tagger.GetComponent<NetworkObject>().NetworkObjectId;
-        ulong taggedID = collision.GetComponent<NetworkObject>().NetworkObjectId;
+        ulong taggerID = tagger.GetComponent<NetworkObject>().OwnerClientId;
+        ulong taggedID = collision.GetComponent<NetworkObject>().OwnerClientId;
         
         if (taggerID != currentChosen.Value)
         {

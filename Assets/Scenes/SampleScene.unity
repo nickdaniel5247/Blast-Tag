@@ -519,6 +519,7 @@ MonoBehaviour:
     m_InternalValue: 0
   playing:
     m_InternalValue: 0
+  roundTime: 10
 --- !u!4 &1425701460
 Transform:
   m_ObjectHideFlags: 0
