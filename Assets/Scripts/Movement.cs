@@ -15,6 +15,8 @@ public class Movement : MonoBehaviour
     public float moveSpeed = 5f;
     public float inputSmoothTime = 0.1f;
 
+    public Transform cam;
+
     private void Awake()
     {
         controls = new InputSystem();
@@ -34,6 +36,7 @@ public class Movement : MonoBehaviour
     private void Update()
     {
         movementInput = controls.Player.Move.ReadValue<Vector2>();
+        transform.rotation = Quaternion.Euler(0f, cam.eulerAngles.y, 0f);
 
         MovePlayer();
         UpdateAnimation();
@@ -61,7 +64,20 @@ public class Movement : MonoBehaviour
                 movementX = -movementX;
         }
 
-        Vector3 move = new Vector3(movementX, 0f, movementY) * speed * Time.deltaTime;
+        Vector3 cameraForward = cam.forward;
+        Vector3 cameraRight = cam.right;
+
+        //Flatten the vectors on the X-Z plane (so they don't move up/down)
+        cameraForward.y = 0;
+        cameraRight.y = 0;
+
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        //Calculate the movement in world space, facing direction camera is pointing
+        Vector3 move = (cameraForward * movementY + cameraRight * movementX) * speed * Time.deltaTime;
+
+        //Move the player
         transform.Translate(move, Space.World);
     }
 
