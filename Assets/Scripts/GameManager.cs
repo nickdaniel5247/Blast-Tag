@@ -28,6 +28,25 @@ public class GameManager : NetworkBehaviour
         playing.Value = true;
     }
 
+    public void Tag(Collider collision, GameObject tagger)
+    {
+        //Sanity check, we should only be server at this point
+        if (!IsServer)
+        {
+            return;
+        }
+
+        ulong taggerID = tagger.GetComponent<NetworkObject>().NetworkObjectId;
+        ulong taggedID = collision.GetComponent<NetworkObject>().NetworkObjectId;
+        
+        if (taggerID != currentChosen.Value)
+        {
+            return;
+        }
+
+        currentChosen.Value = taggedID;
+    }
+
     public void Update()
     {
         if (!playing.Value)

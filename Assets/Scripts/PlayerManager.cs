@@ -18,26 +18,20 @@ public class PlayerManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner)
+        if (!IsServer)
         {
             return;
         }
 
-        //All are disabled by defualt except our own to save unnecessary computation
+        //Detectors are disabled on clients as detection is server sided
         GetComponentInChildren<BoxCollider>().enabled = true;
     }
 
     void OnTriggerEnter(Collider collision)
     {
-        //Only continue if we are chosen
-        if (gameManager.currentChosen.Value != NetworkManager.Singleton.LocalClientId)
-        {
-            return;
-        }
-
         if (collision.CompareTag("Player"))
         {
-            Debug.Log("SEND RPC");
+            gameManager.Tag(collision, gameObject);
         }
     }
 }
