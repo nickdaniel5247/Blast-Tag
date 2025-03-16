@@ -1,26 +1,35 @@
+using Unity.Cinemachine;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Movement : MonoBehaviour
+public class Movement : NetworkBehaviour
 {
     private InputSystem controls;
     private Animator animator;
     private Vector2 movementInput;
 
-    private float currentX = 0f;
-    private float currentY = 0f;
+    private NetworkVariable<float> currentX = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkVariable<float> currentY = new NetworkVariable<float>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private float xVelocity = 0f;
     private float yVelocity = 0f;
 
+    private Transform cam;
+
     public float moveSpeed = 5f;
     public float inputSmoothTime = 0.1f;
 
-    public Transform cam;
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner)
+            cam.GetComponent<CinemachineCamera>().Follow = transform;
+    }
 
     private void Awake()
     {
         controls = new InputSystem();
         animator = GetComponent<Animator>();
+        cam = GameObject.Find("Third Person Camera").transform;
     }
 
     private void OnEnable()
@@ -35,6 +44,17 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
+        if (!IsOwner)
+        {
+            //Smooth damp to prevent getting stuck on mediary inputs while waiting for new values
+            float smoothX = Mathf.SmoothDamp(animator.GetFloat("Input X"), currentX.Value, ref xVelocity, inputSmoothTime);
+            float smoothY = Mathf.SmoothDamp(animator.GetFloat("Input Y"), currentY.Value, ref yVelocity, inputSmoothTime);
+
+            animator.SetFloat("Input X", smoothX);
+            animator.SetFloat("Input Y", smoothY);
+            return;
+        }
+
         movementInput = controls.Player.Move.ReadValue<Vector2>();
         transform.rotation = Quaternion.Euler(0f, cam.eulerAngles.y, 0f);
 
@@ -84,10 +104,10 @@ public class Movement : MonoBehaviour
     private void UpdateAnimation()
     {
         //Smooth damp to prevent abrupt transitions
-        currentX = Mathf.SmoothDamp(currentX, movementInput.x, ref xVelocity, inputSmoothTime);
-        currentY = Mathf.SmoothDamp(currentY, movementInput.y, ref yVelocity, inputSmoothTime);
+        currentX.Value = Mathf.SmoothDamp(currentX.Value, movementInput.x, ref xVelocity, inputSmoothTime);
+        currentY.Value = Mathf.SmoothDamp(currentY.Value, movementInput.y, ref yVelocity, inputSmoothTime);
 
-        animator.SetFloat("Input X", currentX);
-        animator.SetFloat("Input Y", currentY);
+        animator.SetFloat("Input X", currentX.Value);
+        animator.SetFloat("Input Y", currentY.Value);
     }
 }
