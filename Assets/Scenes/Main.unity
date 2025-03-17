@@ -11077,7 +11077,6 @@ MonoBehaviour:
     m_InternalValue: 0
   playing:
     m_InternalValue: 0
-  waitTime: 10
   twentySecondTimer: {fileID: 8300000, guid: 3a793aa8578ef495b88466d124cf39dc, type: 3}
   win: {fileID: 8300000, guid: 31de5da4b122d48e3be1e9bdff143782, type: 3}
 --- !u!4 &1425701460
@@ -16100,8 +16099,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 45, y: 4.696413, z: 44.999992}
-  m_Center: {x: 0, y: 2.3482065, z: 0}
+  m_Size: {x: 45, y: 4.3236647, z: 44.999992}
+  m_Center: {x: 0, y: 2.1618323, z: 0}
 --- !u!23 &2130651746
 MeshRenderer:
   m_ObjectHideFlags: 0
