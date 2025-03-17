@@ -1,4 +1,5 @@
 using System.Linq;
+using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -6,6 +7,8 @@ public class PlayerManager : NetworkBehaviour
 {
     private GameManager gameManager;
     private Animator animator;
+    private GameObject thirdPersonCamera;
+    private GameObject spectatePos;
 
     private AudioSource footsteps;
     public float footstepThreshold = 0.05f;
@@ -13,9 +16,20 @@ public class PlayerManager : NetworkBehaviour
     public AudioClip tagClip;
 
     [Rpc(SendTo.Everyone)]
-    public void SetPlayerStatusRPC(bool enabled)
+    public void SetPlayerStatusRPC(bool alive)
     {
-        gameObject.SetActive(enabled);
+        gameObject.SetActive(alive);
+
+        if (IsOwner && !alive)
+        {
+            thirdPersonCamera.SetActive(false);
+            Camera.main.transform.position = spectatePos.transform.position;
+            Camera.main.transform.rotation = spectatePos.transform.rotation;
+        }
+        else 
+        {
+            thirdPersonCamera.SetActive(true);
+        }
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -40,6 +54,8 @@ public class PlayerManager : NetworkBehaviour
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
         footsteps = GetComponent<AudioSource>();
         animator = GetComponent<Animator>();
+        thirdPersonCamera = GameObject.Find("Third Person Camera");
+        spectatePos = GameObject.Find("Spectate Position");
     }
 
     private void Update()
