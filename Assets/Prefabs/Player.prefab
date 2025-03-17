@@ -463,6 +463,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   footstepThreshold: 0.05
+  tagClip: {fileID: 8300000, guid: 7de1e9087f60848fabe0bd3709244baa, type: 3}
 --- !u!82 &549200516384021315
 AudioSource:
   m_ObjectHideFlags: 0

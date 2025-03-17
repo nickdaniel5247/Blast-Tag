@@ -300,8 +300,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 3a793aa8578ef495b88466d124cf39dc, type: 3}
-  m_Resource: {fileID: 8300000, guid: 3a793aa8578ef495b88466d124cf39dc, type: 3}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 0.4
   m_Pitch: 1
@@ -618,6 +618,8 @@ MonoBehaviour:
   playing:
     m_InternalValue: 0
   waitTime: 10
+  twentySecondTimer: {fileID: 8300000, guid: 3a793aa8578ef495b88466d124cf39dc, type: 3}
+  win: {fileID: 8300000, guid: 31de5da4b122d48e3be1e9bdff143782, type: 3}
 --- !u!4 &1425701460
 Transform:
   m_ObjectHideFlags: 0

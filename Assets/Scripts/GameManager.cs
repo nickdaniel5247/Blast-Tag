@@ -17,11 +17,13 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<int> currentRoundTimeSync = new NetworkVariable<int>();
     private int alivePlayers = 0;
 
-    private AudioSource twentySecondTimer;
+    private AudioSource cameraAudio;
+    public AudioClip twentySecondTimer;
+    public AudioClip win;
 
     private void Awake()
     {
-        twentySecondTimer = GameObject.Find("Main Camera").GetComponent<AudioSource>();
+        cameraAudio = GameObject.Find("Main Camera").GetComponent<AudioSource>();
     }
 
     private void ChoosePlayer()
@@ -65,12 +67,13 @@ public class GameManager : NetworkBehaviour
         currentRoundTime = 0f;
     }
 
-    public void Tag(Collider tagged, GameObject tagger)
+    //Returns true if tag is valid
+    public bool Tag(Collider tagged, GameObject tagger)
     {
         //Sanity check, we should only be server at this point
         if (!IsServer)
         {
-            return;
+            return false;
         }
 
         ulong taggerID = tagger.GetComponent<NetworkObject>().OwnerClientId;
@@ -78,12 +81,14 @@ public class GameManager : NetworkBehaviour
         
         if (taggerID != currentChosen.Value)
         {
-            return;
+            return false;
         }
 
         currentChosen.Value = taggedID;
         tagger.GetComponent<PlayerManager>().HighlightPlayerRPC(false);
         tagged.GetComponent<PlayerManager>().HighlightPlayerRPC(true);
+
+        return true;
     }
 
     private void EndRound()
@@ -98,7 +103,23 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     private void PlayTimerRPC()
     {
-        twentySecondTimer.Play();
+        cameraAudio.PlayOneShot(twentySecondTimer);
+    }
+
+    IEnumerator WaitForCurrentAudio(AudioClip clip)
+    {
+        while (cameraAudio.isPlaying)
+        {
+            yield return null;
+        }
+
+        cameraAudio.PlayOneShot(clip);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void PlayWinRPC()
+    {
+        StartCoroutine(WaitForCurrentAudio(win));
     }
 
     public void Update()
@@ -114,7 +135,7 @@ public class GameManager : NetworkBehaviour
             EndRound();
         }
 
-        if (currentRoundTime >= 10f && !twentySecondTimer.isPlaying)
+        if (currentRoundTime >= 10f && !cameraAudio.isPlaying)
         {
             PlayTimerRPC();
         }
@@ -122,6 +143,7 @@ public class GameManager : NetworkBehaviour
         if (alivePlayers == 1)
         {
             playing.Value = false;
+            PlayWinRPC();
             StartCoroutine(WaitToStartGame());
             return;
         }

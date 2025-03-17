@@ -10,6 +10,8 @@ public class PlayerManager : NetworkBehaviour
     private AudioSource footsteps;
     public float footstepThreshold = 0.05f;
 
+    public AudioClip tagClip;
+
     [Rpc(SendTo.Everyone)]
     public void SetPlayerStatusRPC(bool enabled)
     {
@@ -70,11 +72,22 @@ public class PlayerManager : NetworkBehaviour
         GetComponentInChildren<BoxCollider>().enabled = true;
     }
 
+    [Rpc(SendTo.ClientsAndHost)]
+    public void PlayTaggedSoundRPC()
+    {
+        AudioSource.PlayClipAtPoint(tagClip, transform.position);
+    }
+
     void OnTriggerEnter(Collider collision)
     {
         if (collision.CompareTag("Player"))
         {
-            gameManager.Tag(collision, gameObject);
+            bool tagged = gameManager.Tag(collision, gameObject);
+
+            if (tagged)
+            {
+                collision.GetComponent<PlayerManager>().PlayTaggedSoundRPC();
+            }
         }
     }
 }
