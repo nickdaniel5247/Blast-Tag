@@ -8,13 +8,21 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<ulong> currentChosen = new NetworkVariable<ulong>();
     public NetworkVariable<bool> playing = new NetworkVariable<bool>(false);
 
-    public float roundTime = 10f;
+    public float waitTime = 10f;
+
+    private const float roundTime = 30f;
     private float currentRoundTime = 0f;
 
     //Synced as int to allow for less data transfers
     private NetworkVariable<int> currentRoundTimeSync = new NetworkVariable<int>();
-
     private int alivePlayers = 0;
+
+    private AudioSource twentySecondTimer;
+
+    private void Awake()
+    {
+        twentySecondTimer = GameObject.Find("Main Camera").GetComponent<AudioSource>();
+    }
 
     private void ChoosePlayer()
     {
@@ -87,6 +95,12 @@ public class GameManager : NetworkBehaviour
         --alivePlayers;
     }
 
+    [Rpc(SendTo.ClientsAndHost)]
+    private void PlayTimerRPC()
+    {
+        twentySecondTimer.Play();
+    }
+
     public void Update()
     {
         if (!IsServer || !playing.Value)
@@ -98,6 +112,11 @@ public class GameManager : NetworkBehaviour
         {
             currentRoundTime = 0;
             EndRound();
+        }
+
+        if (currentRoundTime >= 10f && !twentySecondTimer.isPlaying)
+        {
+            PlayTimerRPC();
         }
 
         if (alivePlayers == 1)
@@ -113,7 +132,7 @@ public class GameManager : NetworkBehaviour
 
     IEnumerator WaitToStartGame()
     {
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(waitTime);
         StartGame();
     }
 

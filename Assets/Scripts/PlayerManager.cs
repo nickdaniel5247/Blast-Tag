@@ -5,6 +5,10 @@ using UnityEngine;
 public class PlayerManager : NetworkBehaviour
 {
     private GameManager gameManager;
+    private Animator animator;
+
+    private AudioSource footsteps;
+    public float footstepThreshold = 0.05f;
 
     [Rpc(SendTo.Everyone)]
     public void SetPlayerStatusRPC(bool enabled)
@@ -32,6 +36,27 @@ public class PlayerManager : NetworkBehaviour
     private void Awake()
     {
         gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        footsteps = GetComponent<AudioSource>();
+        animator = GetComponent<Animator>();
+    }
+
+    private void Update()
+    {
+        Vector2 movementMagnitude;
+        movementMagnitude.x = animator.GetFloat("Input X");
+        movementMagnitude.y = animator.GetFloat("Input Y");
+
+        if (movementMagnitude.magnitude > footstepThreshold)
+        {
+            if (!footsteps.isPlaying)
+            {
+                footsteps.Play();
+            }
+        }
+        else 
+        {
+            footsteps.Stop();
+        }
     }
 
     public override void OnNetworkSpawn()
