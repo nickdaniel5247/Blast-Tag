@@ -1,3 +1,4 @@
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -9,6 +10,23 @@ public class PlayerManager : NetworkBehaviour
     public void SetPlayerStatusRPC(bool enabled)
     {
         gameObject.SetActive(enabled);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void HighlightPlayerRPC(bool enabled)
+    {
+        float value = enabled ? 0.01f : 0f;
+        SkinnedMeshRenderer[] meshRenderers = GetComponentsInChildren<SkinnedMeshRenderer>();
+
+        foreach (SkinnedMeshRenderer meshRenderer in meshRenderers)
+        {
+            if (!meshRenderer.materials.Last().HasFloat("_Outline_thickness"))
+            {
+                continue;
+            }
+
+            meshRenderer.materials.Last().SetFloat("_Outline_thickness", value);
+        }
     }
 
     private void Awake()

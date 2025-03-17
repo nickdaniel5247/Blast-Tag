@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using System.Collections;
-using Unity.Cinemachine;
+using System.Collections.Generic;
 
 public class GameManager : NetworkBehaviour
 {
@@ -15,6 +15,22 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<int> currentRoundTimeSync = new NetworkVariable<int>();
 
     private int alivePlayers = 0;
+
+    private void ChoosePlayer()
+    {
+        List<PlayerManager> alive = new List<PlayerManager>();
+
+        foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            var playerObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).gameObject;
+            alive.Add(playerObject.GetComponent<PlayerManager>());
+        }
+
+        int randomIdx = Random.Range(0, alive.Count);
+
+        currentChosen.Value = alive[randomIdx].GetComponent<NetworkObject>().OwnerClientId;
+        alive[randomIdx].HighlightPlayerRPC(true);
+    }
 
     public void StartGame()
     {
@@ -34,16 +50,14 @@ public class GameManager : NetworkBehaviour
             ++alivePlayers;
         }
 
-        int randomIdx = Random.Range(0, NetworkManager.Singleton.ConnectedClientsIds.Count);
-        ulong chosenClientID = NetworkManager.Singleton.ConnectedClientsIds[randomIdx];
+        ChoosePlayer();
 
         //Reset these variables
-        currentChosen.Value = chosenClientID;
         playing.Value = true;
         currentRoundTime = 0f;
     }
 
-    public void Tag(Collider collision, GameObject tagger)
+    public void Tag(Collider tagged, GameObject tagger)
     {
         //Sanity check, we should only be server at this point
         if (!IsServer)
@@ -52,7 +66,7 @@ public class GameManager : NetworkBehaviour
         }
 
         ulong taggerID = tagger.GetComponent<NetworkObject>().OwnerClientId;
-        ulong taggedID = collision.GetComponent<NetworkObject>().OwnerClientId;
+        ulong taggedID = tagged.GetComponent<NetworkObject>().OwnerClientId;
         
         if (taggerID != currentChosen.Value)
         {
@@ -60,12 +74,15 @@ public class GameManager : NetworkBehaviour
         }
 
         currentChosen.Value = taggedID;
+        tagger.GetComponent<PlayerManager>().HighlightPlayerRPC(false);
+        tagged.GetComponent<PlayerManager>().HighlightPlayerRPC(true);
     }
 
     private void EndRound()
     {
         var playerObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(currentChosen.Value).gameObject;
         playerObject.GetComponent<PlayerManager>().SetPlayerStatusRPC(false);
+        playerObject.GetComponent<PlayerManager>().HighlightPlayerRPC(false);
 
         --alivePlayers;
     }
