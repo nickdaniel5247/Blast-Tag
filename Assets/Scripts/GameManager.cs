@@ -21,9 +21,12 @@ public class GameManager : NetworkBehaviour
     public AudioClip twentySecondTimer;
     public AudioClip win;
 
+    private UIManager uiManager;
+
     private void Awake()
     {
         cameraAudio = GameObject.Find("Main Camera").GetComponent<AudioSource>();
+        uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
     }
 
     private void ChoosePlayer()
@@ -122,6 +125,17 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(WaitForCurrentAudio(win));
     }
 
+    IEnumerator WaitSomeTime()
+    {
+        yield return new WaitForSeconds(waitTime);
+        uiManager.PresentStartGame();
+    }
+
+    private void RestartGame()
+    {
+        StartCoroutine(WaitSomeTime());
+    }
+
     public void Update()
     {
         if (!IsServer || !playing.Value)
@@ -144,22 +158,11 @@ public class GameManager : NetworkBehaviour
         {
             playing.Value = false;
             PlayWinRPC();
-            StartCoroutine(WaitToStartGame());
+            RestartGame();
             return;
         }
 
         currentRoundTime += Time.deltaTime;
         currentRoundTimeSync.Value = (int)currentRoundTime;
-    }
-
-    IEnumerator WaitToStartGame()
-    {
-        yield return new WaitForSeconds(waitTime);
-        StartGame();
-    }
-
-    public override void OnNetworkSpawn()
-    {
-        StartCoroutine(WaitToStartGame());
     }
 }
