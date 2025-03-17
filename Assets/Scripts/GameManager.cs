@@ -35,6 +35,12 @@ public class GameManager : NetworkBehaviour
         foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
         {
             var playerObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(uid).gameObject;
+
+            if (!playerObject.activeSelf)
+            {
+                continue;
+            }
+
             alive.Add(playerObject.GetComponent<PlayerManager>());
         }
 
@@ -149,6 +155,11 @@ public class GameManager : NetworkBehaviour
         if (currentRoundTime > roundTime)
         {
             EndRound();
+
+            if (alivePlayers > 1)
+            {
+                ChoosePlayer();
+            }
         }
 
         if (currentRoundTime >= 10f && !cameraAudio.isPlaying)
