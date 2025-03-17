@@ -8,13 +8,10 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<ulong> currentChosen = new NetworkVariable<ulong>();
     public NetworkVariable<bool> playing = new NetworkVariable<bool>(false);
 
-    public float waitTime = 10f;
+    public const float waitTime = 10f;
 
     private const float roundTime = 30f;
     private float currentRoundTime = 0f;
-
-    //Synced as int to allow for less data transfers
-    private NetworkVariable<int> currentRoundTimeSync = new NetworkVariable<int>();
     private int alivePlayers = 0;
 
     private AudioSource cameraAudio;
@@ -29,8 +26,10 @@ public class GameManager : NetworkBehaviour
         uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
     }
 
+    //Randomly choose next player
     private void ChoosePlayer()
     {
+        //Get all alive players
         List<PlayerManager> alive = new List<PlayerManager>();
 
         foreach (ulong uid in NetworkManager.Singleton.ConnectedClientsIds)
@@ -39,6 +38,7 @@ public class GameManager : NetworkBehaviour
             alive.Add(playerObject.GetComponent<PlayerManager>());
         }
 
+        //Randomly choose one
         int randomIdx = Random.Range(0, alive.Count);
 
         currentChosen.Value = alive[randomIdx].GetComponent<NetworkObject>().OwnerClientId;
@@ -94,8 +94,11 @@ public class GameManager : NetworkBehaviour
         return true;
     }
 
+    //Someone dies and the next round begins
     private void EndRound()
     {
+        currentRoundTime = 0;
+
         var playerObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(currentChosen.Value).gameObject;
         playerObject.GetComponent<PlayerManager>().SetPlayerStatusRPC(false);
         playerObject.GetComponent<PlayerManager>().HighlightPlayerRPC(false);
@@ -125,7 +128,7 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(WaitForCurrentAudio(win));
     }
 
-    IEnumerator WaitSomeTime()
+    IEnumerator WaitThenPresentStart()
     {
         yield return new WaitForSeconds(waitTime);
         uiManager.PresentStartGame();
@@ -133,7 +136,7 @@ public class GameManager : NetworkBehaviour
 
     private void RestartGame()
     {
-        StartCoroutine(WaitSomeTime());
+        StartCoroutine(WaitThenPresentStart());
     }
 
     public void Update()
@@ -145,7 +148,6 @@ public class GameManager : NetworkBehaviour
 
         if (currentRoundTime > roundTime)
         {
-            currentRoundTime = 0;
             EndRound();
         }
 
@@ -154,6 +156,7 @@ public class GameManager : NetworkBehaviour
             PlayTimerRPC();
         }
 
+        //All players died, last one standing won
         if (alivePlayers == 1)
         {
             playing.Value = false;
@@ -163,6 +166,5 @@ public class GameManager : NetworkBehaviour
         }
 
         currentRoundTime += Time.deltaTime;
-        currentRoundTimeSync.Value = (int)currentRoundTime;
     }
 }

@@ -20,13 +20,19 @@ public class PlayerManager : NetworkBehaviour
     {
         gameObject.SetActive(alive);
 
-        if (IsOwner && !alive)
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        //If we died, switch to spectator camera
+        if (!alive)
         {
             thirdPersonCamera.SetActive(false);
             Camera.main.transform.position = spectatePos.transform.position;
             Camera.main.transform.rotation = spectatePos.transform.rotation;
         }
-        else 
+        else
         {
             thirdPersonCamera.SetActive(true);
         }
@@ -94,6 +100,7 @@ public class PlayerManager : NetworkBehaviour
         AudioSource.PlayClipAtPoint(tagClip, transform.position);
     }
 
+    //Attempt to tag other players when they collide with our detector
     void OnTriggerEnter(Collider collision)
     {
         if (collision.CompareTag("Player"))

@@ -55,6 +55,7 @@ public class Movement : NetworkBehaviour
             return;
         }
 
+        //Get movement inputs and direction
         movementInput = controls.Player.Move.ReadValue<Vector2>();
         transform.rotation = Quaternion.Euler(0f, cam.eulerAngles.y, 0f);
 
@@ -88,8 +89,8 @@ public class Movement : NetworkBehaviour
         Vector3 cameraRight = cam.right;
 
         //Flatten the vectors on the X-Z plane (so they don't move up/down)
-        cameraForward.y = 0;
-        cameraRight.y = 0;
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
 
         cameraForward.Normalize();
         cameraRight.Normalize();
