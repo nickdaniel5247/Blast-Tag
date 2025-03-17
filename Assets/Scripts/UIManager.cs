@@ -6,6 +6,7 @@ public class UIManager : NetworkBehaviour
     public GameObject MainMenu;
     public GameObject InGame;
     public AudioClip button;
+    public AudioClip button2;
 
     private InputSystem controls;
     private GameManager gameManager;
@@ -22,7 +23,7 @@ public class UIManager : NetworkBehaviour
     public void OnJoinLobby()
     {
         NetworkManager.Singleton.StartClient();
-        Camera.main.GetComponent<AudioSource>().PlayOneShot(button);
+        Camera.main.GetComponent<AudioSource>().PlayOneShot(button2);
         MainMenu.SetActive(false);
 
         PresentStartGame();

@@ -3620,7 +3620,8 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   MainMenu: {fileID: 1993286663}
   InGame: {fileID: 1981398551}
-  button: {fileID: 8300000, guid: 2d886713f5cd94025bc1d845352a25ff, type: 3}
+  button: {fileID: 8300000, guid: 4d0906ebb0c5b4070887f8d107610ea0, type: 3}
+  button2: {fileID: 8300000, guid: 2d886713f5cd94025bc1d845352a25ff, type: 3}
 --- !u!1 &400840872
 GameObject:
   m_ObjectHideFlags: 0
